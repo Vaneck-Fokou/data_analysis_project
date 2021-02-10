@@ -1,0 +1,146 @@
+---
+title: "final_project"
+author: "Jane Doe"
+date: "8/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+## install packages if necessary
+list.of.packages <- c("janitor", "ggplot2", "dplyr", "lubridate", "zoo", "forcats", "ggthemes", "knitr", "rmarkdown")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+## load packages
+library(janitor)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(zoo)
+library(forcats)
+library(ggthemes)
+library(knitr)
+
+## set working directory
+knitr::opts_knit$set(root.dir = '/cloud/project')
+```
+
+### The Data
+
+The American Time Use Survey (ATUS) is a time-use survey of Americans, which is sponsored by the Bureau of Labor Statistics (BLS) and conducted by the U.S. Census Bureau. Respondents of the survey are asked to keep a diary for one day carefully recording the amount of time they spend on various activities including working, leisure, childcare, and household activities. The survey has been conducted every year since 2003.
+
+Included in the data are main demographic variables such as respondents' age, sex, race, marital status, and education. The data also includes detailed income and employment information for each respondent. While there are some slight changes to the survey each year, the main questions asked stay the same. You can find the data dictionaries for each year on [https://www.bls.gov/tus/dictionaries.htm](https://www.bls.gov/tus/dictionaries.htm)
+
+
+### Accessing the Data
+
+There are multiple ways to access the ATUS data; however, for this project, you'll get the raw data directly from the source. The data for each year can be found at [https://www.bls.gov/tus/#data](https://www.bls.gov/tus/#data). Once there, there is an option of downloading a multi-year file, which includes data for all of the years the survey has been conducted, but **for the purposes of this project, let's just look at the data for 2016**. Under **Data Files**, click on `American Time Use Survey--2016 Microdata files`. 
+
+You will be brought to a new screen. Scroll down to the section **2016 Basic ATUS Data Files**. Under this section, you'll want to **click to download** the following two files: `ATUS 2016 Activity summary file (zip)` and `ATUS-CPS 2016 file (zip)`. 
+
+* `ATUS 2016 Activity summary file (zip)` contains information about the total time each ATUS respondent spent doing each activity listed in the survey. The activity data includes information such as activity codes, activity start and stop times, and locations.
+* `ATUS-CPS 2016 file (zip)` contains information about each household member of all individuals selected to participate in the ATUS.
+
+Once they've been downloaded, you'll need to **unzip the files**. Once unzipped, you will see the dataset in a number of different file formats including `.sas`, `.sps`, and `.dat` files. **We'll be working with the .dat files.**
+
+### Loading the Data into R
+
+Use the first approach explained above to download and access the ATUS data for 2016. Download the CPS and Activity Summary files in a folder and unzip them and within each folder upload the files ending in .dat to `data/raw_data` filder on RStudio.cloud. To load the data in, **run the code in the `atus-data` code chunk** to create an object called `atus.all`.
+
+### Importing data
+
+```{r atus-data, warning=FALSE}
+atus.cps <- read.delim('data/raw_data/atuscps_2016.dat', sep=",")
+atus.sum <- read.delim('data/raw_data/atussum_2016.dat', sep=",")
+atus.all <- atus.sum %>%
+  left_join(atus.cps %>% filter(TULINENO==1), by = c("TUCASEID"))
+```
+
+### Exploratory Analysis of Child Care Data
+
+```{r initial-exploration}
+### Add Code Here
+```
+
+
+```{r creating-childcare-var}
+atus.all <- atus.all %>% 
+    mutate(CHILDCARE = )
+```
+
+```{r childcare-density-plot}
+ggplot(atus.all) +
+    geom_density()
+```
+
+```{r gender-analysis}
+atus.all %>% 
+    group_by() %>% 
+    FUNCTION()
+```
+
+```{r replacing-na}
+## replace -1 in the variable TRDPFTPT with NA.
+```
+
+```{r exploratory-analysis}
+## add your exploratory analysis code here
+```
+
+### Regression Analysis
+
+```{r reg-analysis}
+## add your regression analysis code here
+reg_model <- lm()
+summary(reg_model)
+```
+
+### Exploratory Analysis of Age and Activities
+
+```{r activity-cats}
+atus.wide <- atus.all %>%
+    mutate(act01 = ,
+           act02 = ,
+           act03 = ,
+           act04 = ,
+           act05 = ,
+           act06 = ,
+           act07 = ,
+           act08 = ,
+           act09 = ,
+           act10 = ,
+           act11 = ,
+           act12 = ,
+           act13 = ,
+           act14 = ,
+           act15 = ,
+           act16 = ,
+           # act17 = , there is no category 17 in the data
+           act18 = ) %>% 
+    select(TUCASEID, TEAGE, HEFAMINC, starts_with("act"))
+```
+
+```{r wide-to-long}
+atus.long <- atus.wide %>% 
+  # use code to convert the wide format to long.
+```
+
+```{r age-activity}
+atus.long %>% 
+    group_by(ACTIVITY, TEAGE) %>% 
+    summarise(AVGMINS = mean(MINS)) %>% 
+    ggplot() +
+```
+
+### Exploratory Analysis of Income and Activities
+
+```{r activity-income}
+atus.long %>% 
+  group_by(ACTIVITY, HEFAMINC) %>% 
+  ## add the rest of the code here
+```
+
+
+```{r save-plot}
+## save the plot above
+```
