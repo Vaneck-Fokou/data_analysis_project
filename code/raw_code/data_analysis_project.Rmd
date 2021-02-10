@@ -1,7 +1,7 @@
 ---
-title: "final_project"
-author: "Jane Doe"
-date: "8/10/2018"
+title: "data_analysis_project"
+author: "Vaneck Fokou"
+date: "10/02/2021"
 output: html_document
 ---
 
@@ -22,7 +22,7 @@ library(ggthemes)
 library(knitr)
 
 ## set working directory
-knitr::opts_knit$set(root.dir = '/cloud/project')
+knitr::opts_knit$set(root.dir = '/cloud/project/data_analysis_project/')
 ```
 
 ### The Data
@@ -59,7 +59,8 @@ atus.all <- atus.sum %>%
 ### Exploratory Analysis of Child Care Data
 
 ```{r initial-exploration}
-### Add Code Here
+### Size of the dataset
+dim(atus.all)
 ```
 
 
