@@ -15,10 +15,13 @@ if(length(new.packages)) install.packages(new.packages)
 library(janitor)
 library(ggplot2)
 library(dplyr)
+library(tidyr)
+library(naniar)
 library(lubridate)
 library(zoo)
 library(forcats)
 library(ggthemes)
+library(RColorBrewer)
 library(knitr)
 
 ## set working directory
@@ -62,37 +65,97 @@ atus.all <- atus.sum %>%
 ### Size of the dataset
 dim(atus.all)
 ```
+```{r}
+### Viewing the first rows of the dataset
+head(atus.all)
+```
+```{r}
+### Time on average that a person in the sample spend on 
+### Socializing and communicating with others
+mean(atus.all$t120101)
+```
 
 
 ```{r creating-childcare-var}
+### Summing all activities that is associated with “Caring For & Helping ### HH Children”.
 atus.all <- atus.all %>% 
-    mutate(CHILDCARE = )
+    mutate(CHILDCARE = rowSums(select(atus.all, starts_with("t0301"))))
 ```
 
 ```{r childcare-density-plot}
+### density of CHILDCARE variable
 ggplot(atus.all) +
-    geom_density()
+    geom_density(aes(CHILDCARE))
 ```
 
 ```{r gender-analysis}
+### Gender which spend more time with children
 atus.all %>% 
-    group_by() %>% 
-    FUNCTION()
+    group_by(TESEX) %>% 
+    summarise(AVG.TIME = mean(CHILDCARE))
 ```
 
 ```{r replacing-na}
 ## replace -1 in the variable TRDPFTPT with NA.
+atus.all <- atus.all %>% 
+  replace_with_na_at(.vars = c("TRDPFTPT"), condition = ~.x == -1)
+```
+```{r}
+## number of missing value in the variable TRDPFTPT
+sum(is.na(atus.all$TRDPFTPT))
 ```
 
+
 ```{r exploratory-analysis}
-## add your exploratory analysis code here
+## scatter plot of age and chidcare variable
+atus.all %>%
+  filter(TRCHILDNUM > 0) %>%
+  ggplot(aes(TEAGE, CHILDCARE)) +
+  geom_point()
 ```
+
+```{r}
+## replace -1 in the variable TRERNWA with NA.
+atus.all <- atus.all %>% 
+  replace_with_na_at(.vars = c("TRERNWA"), condition = ~.x == -1)
+```
+```{r}
+## number of missing value in the variable TRERNWA
+sum(is.na(atus.all$TRERNWA))
+```
+
+
+```{r}
+## scatter plot of income and chidcare variable
+atus.all %>%
+  filter(TRCHILDNUM > 0) %>%
+  ggplot(aes(HEFAMINC, CHILDCARE)) +
+  geom_point()
+```
+```{r}
+## box-plot of Full time or part time employment status of respondent and ## childcare
+
+atus.all %>%
+  filter(TRCHILDNUM > 0, is.na(TRDPFTPT) == FALSE) %>%
+  ggplot(aes(as.factor(TRDPFTPT), CHILDCARE)) +
+  geom_boxplot(color = "brown", fill = "wheat")
+```
+
+```{r}
+## box-plot of marital status of respondent and  childcare
+
+atus.all %>%
+  filter(TRCHILDNUM > 0, is.na(TRSPPRES) == FALSE) %>%
+  ggplot(aes(as.factor(TRSPPRES), CHILDCARE)) +
+  geom_boxplot(fill = "steelblue")
+```
+
 
 ### Regression Analysis
 
 ```{r reg-analysis}
-## add your regression analysis code here
-reg_model <- lm()
+## regression analysis 
+reg_model <- lm(CHILDCARE ~ TEAGE + TESEX + TRDPFTPT + TRSPPRES + HEFAMINC + TRCHILDNUM, data = filter(atus.all, TRCHILDNUM > 0))
 summary(reg_model)
 ```
 
@@ -100,37 +163,58 @@ summary(reg_model)
 
 ```{r activity-cats}
 atus.wide <- atus.all %>%
-    mutate(act01 = ,
-           act02 = ,
-           act03 = ,
-           act04 = ,
-           act05 = ,
-           act06 = ,
-           act07 = ,
-           act08 = ,
-           act09 = ,
-           act10 = ,
-           act11 = ,
-           act12 = ,
-           act13 = ,
-           act14 = ,
-           act15 = ,
-           act16 = ,
+    mutate(act01 = rowSums(select(atus.all, starts_with("t01"))),
+           act02 = rowSums(select(atus.all, starts_with("t02"))),
+           act03 = rowSums(select(atus.all, starts_with("t03"))),
+           act04 = rowSums(select(atus.all, starts_with("t04"))),
+           act05 = rowSums(select(atus.all, starts_with("t05"))),
+           act06 = rowSums(select(atus.all, starts_with("t06"))),
+           act07 = rowSums(select(atus.all, starts_with("t07"))),
+           act08 = rowSums(select(atus.all, starts_with("t08"))),
+           act09 = rowSums(select(atus.all, starts_with("t09"))),
+           act10 = rowSums(select(atus.all, starts_with("t10"))),
+           act11 = rowSums(select(atus.all, starts_with("t11"))),
+           act12 = rowSums(select(atus.all, starts_with("t12"))),
+           act13 = rowSums(select(atus.all, starts_with("t13"))),
+           act14 = rowSums(select(atus.all, starts_with("t14"))),
+           act15 = rowSums(select(atus.all, starts_with("t15"))),
+           act16 = rowSums(select(atus.all, starts_with("t16"))),
            # act17 = , there is no category 17 in the data
-           act18 = ) %>% 
+           act18 = rowSums(select(atus.all, starts_with("t18")))) %>% 
     select(TUCASEID, TEAGE, HEFAMINC, starts_with("act"))
 ```
 
-```{r wide-to-long}
-atus.long <- atus.wide %>% 
-  # use code to convert the wide format to long.
+```{r}
+## mean time spent on each activity
+
+atus.wide %>% select(starts_with("act")) %>%
+  sapply(function(x) mean(x))
 ```
+```{r}
+## most time spent on "work & work-related activities"
+max(atus.wide$act05)
+```
+
+```{r wide-to-long}
+## use code to convert the wide format to long.
+atus.long <- atus.wide %>% 
+  gather(key = "ACTIVITY", value = "MINS", 
+         colnames(select(atus.wide, starts_with("act"))))
+```
+
+```{r}
+## viewing the first rows of the long dataframe
+head(atus.long)
+```
+
 
 ```{r age-activity}
 atus.long %>% 
     group_by(ACTIVITY, TEAGE) %>% 
     summarise(AVGMINS = mean(MINS)) %>% 
-    ggplot() +
+    ggplot(aes(TEAGE, AVGMINS)) + geom_line() + facet_wrap(~ACTIVITY, nrow = 3)
+  
+  
 ```
 
 ### Exploratory Analysis of Income and Activities
@@ -138,10 +222,21 @@ atus.long %>%
 ```{r activity-income}
 atus.long %>% 
   group_by(ACTIVITY, HEFAMINC) %>% 
+  summarise(TOTAL = sum(MINS)) %>%
+  ggplot(aes(ACTIVITY, TOTAL, fill = as.factor(HEFAMINC))) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_viridis_d(option = "inferno") +
+  labs(title = "How different income groups spend time doing each activity ?", subtitle = "2016 American Time Used Survey", fill = "Income Category") +
+  xlab("") +
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+    
+  
   ## add the rest of the code here
 ```
 
-
 ```{r save-plot}
 ## save the plot above
+ggsave(filename = "figures/explanatory_figures/Income_Activity.png", width = 10, height = 10, units = c("cm"))
 ```
