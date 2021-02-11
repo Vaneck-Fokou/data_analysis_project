@@ -228,7 +228,7 @@ atus.long %>%
   coord_flip() +
   scale_fill_viridis_d(option = "inferno") +
   labs(title = "How different income groups spend time doing each activity ?", subtitle = "2016 American Time Used Survey", fill = "Income Category") +
-  xlab("") +
+  ylab("Time (min)") +
   theme_minimal() + 
   theme(legend.position = "bottom")
     
